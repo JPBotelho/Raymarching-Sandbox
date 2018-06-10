@@ -53,7 +53,7 @@
 
 			
 			
-			fixed4 raymarch(float3 origin, float3 direction, float depth, out bool hit, out float shadows, out float ao, out float3 normal, out float light) 
+			fixed4 raymarch(float3 origin, float3 direction, float depth, out bool hit, out RenderInfo buffers) 
 			{
 				hit = true;				
 				const int maxstep = 500;
@@ -72,10 +72,7 @@
 
 					if (dist.x < 0.0001) 
 					{
-						normal = calcNormal(worldPos);
-						shadows = softshadow(worldPos, normalize(_LightPos - worldPos));
-						ao = calcAO(worldPos, normal);
-						light = dot(normal, normalize(_LightPos - worldPos));
+						buffers = render(worldPos, direction);
 						
 						float4 colors[5] =
 						{
@@ -126,15 +123,12 @@
 				float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
 		
 				//Out paramters
-				float steps = 0;	
-				bool hit;				
-				float shadows;
-				float light;
-				float ao;
-				float3 normal;
-				fixed4 color = raymarch(origin, direction, depth, hit, shadows, ao, normal, light);
+				bool hit;	
+				RenderInfo buffers;			
 
-				return pow(light * shadows * ao * pow(color, 2.2), 1.0/2.2);//ao * color;
+				fixed4 color = raymarch(origin, direction, depth, hit, buffers);
+
+				return pow(buffers.light * buffers.shadow * buffers.ao * pow(color, 2.2), 1.0/2.2);//ao * color;
 				//return light * ao * shadows * color;
 			}
 			ENDCG

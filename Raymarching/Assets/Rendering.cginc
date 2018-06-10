@@ -5,9 +5,9 @@ struct RenderInfo
 {
     float3 worldPos;
     float3 normal;
-    float3 shadow;
-    float3 light;
-    float3 ao;
+    float shadow;
+    float light;
+    float ao;
 };
 
 float2 map(float3 p) 
@@ -103,5 +103,8 @@ RenderInfo render (float3 worldPos, float3 direction)
     i.worldPos = worldPos;
     i.normal = calcNormal(worldPos);
     i.shadow = softshadow(worldPos, direction);
-    //i.light = 
+    i.light = calcLight(worldPos, i.normal);
+    i.ao = calcAO(worldPos, i.normal);
+
+    return i;
 }
