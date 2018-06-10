@@ -23,7 +23,6 @@
 			uniform sampler2D _MainTex;
 			uniform float4 _MainTex_TexelSize;
 
-			uniform float3 _LightPos;
 			uniform float _DrawDistance;
 
 			uniform float4 _Color1;
@@ -39,7 +38,6 @@
 			float3 _CamUp;
 			float _FovX;
 			float _AspectRatio;
-			float _LightStrength;
 
 			struct appdata
 			{
@@ -55,7 +53,7 @@
 
 			
 			
-			fixed4 raymarch(float3 origin, float3 direction, float depth, out float steps, out bool hit, out float light) 
+			fixed4 raymarch(float3 origin, float3 direction, float depth, out bool hit, out float shadows, out float ao, out float3 normal, out float light) 
 			{
 				hit = true;				
 				const int maxstep = 500;
@@ -74,10 +72,11 @@
 
 					if (dist.x < 0.0001) 
 					{
-						//float3 normal = calcNormal(worldPos);
-						//light = dot(-_LightDir.xyz, normal);
-						light = softshadow(worldPos, normalize(_LightPos - worldPos), .01, 30.0, _LightStrength);
-
+						normal = calcNormal(worldPos);
+						shadows = softshadow(worldPos, normalize(_LightPos - worldPos));
+						ao = calcAO(worldPos, normal);
+						light = dot(normal, normalize(_LightPos - worldPos));
+						
 						float4 colors[5] =
 						{
 							_Color1, 
@@ -91,7 +90,6 @@
 					}
 					
 					traveledDist += dist;
-					steps = i;
 				}
 				hit = false;
 				return 0;
@@ -130,12 +128,14 @@
 				//Out paramters
 				float steps = 0;	
 				bool hit;				
+				float shadows;
 				float light;
-				fixed4 color = raymarch(origin, direction, depth, steps, hit, light);
+				float ao;
+				float3 normal;
+				fixed4 color = raymarch(origin, direction, depth, hit, shadows, ao, normal, light);
 
-
-				float ao = 1 - steps / 64;
-				return light;//ao * color;
+				return pow(light * shadows * ao * pow(color, 2.2), 1.0/2.2);//ao * color;
+				//return light * ao * shadows * color;
 			}
 			ENDCG
 		}

@@ -6,7 +6,7 @@
 public class RaymarchGeneric : SceneViewFilter
 {
     public Transform SunLight;
-    [Range(0, 1)]
+    [Range(0, 100)]
 	public float lightStrength;
 
 	private Shader EffectShader
