@@ -49,6 +49,7 @@
      <Compile Include="Assets\RaymarchGeneric.cs" />
      <Compile Include="Assets\SceneViewFilter.cs" />
      <None Include="Assets\DistanceFunc.cginc" />
+     <None Include="Assets\Rendering.cginc" />
      <None Include="Assets\RaymarchGeneric.shader" />
  <Reference Include="UnityEngine.UI">
  <HintPath>D:/Programas/Unity Installs/Unity 5.6.1/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>

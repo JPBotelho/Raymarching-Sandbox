@@ -6,6 +6,8 @@
 public class RaymarchGeneric : SceneViewFilter
 {
     public Transform SunLight;
+    [Range(0, 1)]
+	public float lightStrength;
 
 	private Shader EffectShader
     {
@@ -67,7 +69,7 @@ public class RaymarchGeneric : SceneViewFilter
 		EffectMaterial.SetColor("_Color3", color3);
 		EffectMaterial.SetColor("_Color4", color4);
 		EffectMaterial.SetColor("_Color5", color5);
-		EffectMaterial.SetVector("_LightDir", SunLight ? SunLight.forward : Vector3.down);
+		EffectMaterial.SetVector("_LightPos", SunLight.position);
         EffectMaterial.SetFloat("_DrawDistance", _RaymarchDrawDistance);
 		EffectMaterial.SetVector("_CameraWP", CurrentCamera.transform.position);
 		EffectMaterial.SetFloat("_FovX", CurrentCamera.fieldOfView * Mathf.Deg2Rad);
@@ -75,6 +77,8 @@ public class RaymarchGeneric : SceneViewFilter
         EffectMaterial.SetVector("_CamUp", CurrentCamera.transform.up.normalized);
         EffectMaterial.SetVector("_CamRight", CurrentCamera.transform.right.normalized);
 		EffectMaterial.SetFloat("_AspectRatio", CurrentCamera.aspect);
+		EffectMaterial.SetFloat("_LightStrength", lightStrength);
+
 
 		Graphics.Blit(source, destination, EffectMaterial);
     }
