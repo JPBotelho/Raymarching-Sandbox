@@ -1,3 +1,9 @@
+uniform float4 _Color1;
+uniform float4 _Color2;
+uniform float4 _Color3;
+uniform float4 _Color4;
+uniform float4 _Color5;
+
 uniform float3 _LightPos;
 uniform float _LightStrength;
 
@@ -5,20 +11,29 @@ struct RenderInfo
 {
     float3 worldPos;
     float3 normal;
+    float4 reflection;
     float shadow;
     float light;
     float ao;
 };
 
-float2 map(float3 p) 
+//X - dist
+//Y - color index
+//Z - reflection
+float3 map(float3 p) 
 {
     float sphere = sdSphere(p, 1.3);
     float torus = sdTorus(p, float2(5, 1));
     float plane = p.y + 1;
 
     float sphereTorus = min(sphere, torus);
-    float currentMat = sphere < torus ? 0 : 1;
-    return float2(min(sphereTorus, plane), sphereTorus < plane ? currentMat : 2);
+    float currentColor = sphere < torus ? 0 : 1;
+    return float3(min(sphereTorus, plane), sphereTorus < plane ? currentColor : 2, sphereTorus < plane ? 0 : 1);
+}
+
+float4 renderBuffer(RenderInfo buffer, float4 color)
+{
+    return pow(buffer.light * buffer.shadow * buffer.ao * pow(color, 2.2), 1.0/2.2);
 }
 
 float3 calcNormal(in float3 pos)
@@ -97,6 +112,55 @@ float calcAO(float3 pos, float3 nor )
     return clamp( 1.0 - 3.0*occ, 0.0, 1.0 );    
 }
 
+float4 renderRefl (float3 worldPos, float3 direction, float4 color)
+{
+    RenderInfo i;
+    i.worldPos = worldPos;
+    i.normal = calcNormal(worldPos);
+    i.shadow = softshadow(worldPos, direction);
+    i.light = calcLight(worldPos, i.normal);
+    i.ao = calcAO(worldPos, i.normal);
+
+    return renderBuffer(i, color);
+}
+
+RenderInfo render(float3 worldPos, float3 direction);
+
+fixed4 calcRefl(float3 origin, float3 direction, float3 origin2, float3 dir2)
+{
+	const int maxstep = 500;
+	float traveledDist = 0;
+
+	[loop]
+	for (int i = 0; i < maxstep; ++i) 
+	{					
+		if (traveledDist > 100)
+		{
+			break;
+		}
+
+		float3 worldPos = origin + direction * traveledDist;
+		float2 dist = map(worldPos);
+
+		if (dist.x < 0.0001) 
+		{
+            float4 colors[5] =
+			{
+				_Color1, 
+				_Color2,
+				_Color3,
+				_Color4,
+				_Color5
+			};
+
+			return renderRefl(origin2, dir2, colors[dist.y]);
+		}
+		
+		traveledDist += dist;
+	}
+	return 0;
+}
+
 RenderInfo render (float3 worldPos, float3 direction)
 {
     RenderInfo i;
@@ -105,6 +169,9 @@ RenderInfo render (float3 worldPos, float3 direction)
     i.shadow = softshadow(worldPos, direction);
     i.light = calcLight(worldPos, i.normal);
     i.ao = calcAO(worldPos, i.normal);
+
+    float3 reflectionDir = reflect(direction, normalize(i.normal));
+    i.reflection = calcRefl(worldPos + reflectionDir * 0.5, reflectionDir, worldPos, reflectionDir);
 
     return i;
 }

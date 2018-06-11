@@ -18,18 +18,12 @@
 			#include "UnityCG.cginc"
 			#include "DistanceFunc.cginc"
 			#include "Rendering.cginc"
+			#include "Raymarcher.cginc"
+
 			
 			uniform sampler2D _CameraDepthTexture;
 			uniform sampler2D _MainTex;
 			uniform float4 _MainTex_TexelSize;
-
-			uniform float _DrawDistance;
-
-			uniform float4 _Color1;
-			uniform float4 _Color2;
-			uniform float4 _Color3;
-			uniform float4 _Color4;
-			uniform float4 _Color5;
 
 			float3 _CameraWP;
 
@@ -50,48 +44,7 @@
 				float4 pos : SV_POSITION;
 				float2 uv : TEXCOORD0;
 			};
-
 			
-			
-			fixed4 raymarch(float3 origin, float3 direction, float depth, out bool hit, out RenderInfo buffers) 
-			{
-				hit = true;				
-				const int maxstep = 500;
-				float traveledDist = 0;
-
-				[loop]
-				for (int i = 0; i < maxstep; ++i) 
-				{					
-					if (traveledDist > _DrawDistance || traveledDist > depth)
-					{
-						break;
-					}
-
-					float3 worldPos = origin + direction * traveledDist;
-					float2 dist = map(worldPos);
-
-					if (dist.x < 0.0001) 
-					{
-						buffers = render(worldPos, direction);
-						
-						float4 colors[5] =
-						{
-							_Color1, 
-							_Color2,
-							_Color3,
-							_Color4,
-							_Color5
-						};
-
-						return colors[dist.y];
-					}
-					
-					traveledDist += dist;
-				}
-				hit = false;
-				return 0;
-			}
-
 
 			v2f vert (appdata v)
 			{
@@ -120,16 +73,14 @@
 					i.uv.y = 1 - i.uv.y;
 				#endif
 
-				float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
-		
-				//Out paramters
 				bool hit;	
 				RenderInfo buffers;			
 
-				fixed4 color = raymarch(origin, direction, depth, hit, buffers);
+				float refl;
+				float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
+				fixed4 color = raymarch(origin, direction, depth, hit, buffers, refl);
 
-				return pow(buffers.light * buffers.shadow * buffers.ao * pow(color, 2.2), 1.0/2.2);//ao * color;
-				//return light * ao * shadows * color;
+				return max(renderBuffer(buffers, color), buffers.reflection * refl);//pow(buffers.light * buffers.shadow * buffers.ao * pow(color, 2.2), 1.0/2.2);
 			}
 			ENDCG
 		}
