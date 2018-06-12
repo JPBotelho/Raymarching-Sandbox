@@ -33,7 +33,7 @@ float3 map(float3 p)
 
 float4 renderBuffer(RenderInfo buffer, float4 color)
 {
-    return pow(buffer.light * buffer.shadow * buffer.ao * pow(color, 2.2), 1.0/2.2);
+    return pow(buffer.light * 1 * buffer.ao * pow(color, 2.2), 1.0/2.2);
 }
 
 float3 calcNormal(in float3 pos)
@@ -120,6 +120,7 @@ float4 renderRefl (float3 worldPos, float3 direction, float4 color)
     i.shadow = softshadow(worldPos, direction);
     i.light = calcLight(worldPos, i.normal);
     i.ao = calcAO(worldPos, i.normal);
+    i.reflection = 1;
 
     return renderBuffer(i, color);
 }
@@ -128,7 +129,7 @@ RenderInfo render(float3 worldPos, float3 direction);
 
 fixed4 calcRefl(float3 origin, float3 direction, float3 origin2, float3 dir2)
 {
-	const int maxstep = 500;
+	const int maxstep = 50;
 	float traveledDist = 0;
 
 	[loop]
@@ -158,7 +159,7 @@ fixed4 calcRefl(float3 origin, float3 direction, float3 origin2, float3 dir2)
 		
 		traveledDist += dist;
 	}
-	return 0;
+	return 1;
 }
 
 RenderInfo render (float3 worldPos, float3 direction)
