@@ -76,14 +76,10 @@
 				bool hit;	
 				RenderInfo buffers;			
 
-				float refl;
 				float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
-				fixed4 color = raymarch(origin, direction, depth, hit, buffers, refl);
+				fixed4 color = raymarch(origin, direction, depth, hit, buffers);
 
-				if(refl == 0)
-					buffers.reflection = 1;
-				//return buffers.reflection;
-				return (renderBuffer(buffers, color) * buffers.reflection);//pow(buffers.light * buffers.shadow * buffers.ao * pow(color, 2.2), 1.0/2.2);
+				return renderBuffer(buffers, color);//pow(buffers.light * buffers.shadow * buffers.ao * pow(color, 2.2), 1.0/2.2);
 			}
 			ENDCG
 		}
