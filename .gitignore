@@ -42,3 +42,11 @@ sysinfo.txt
 
 Raymarching/Library/*
 Raymarching/Library/
+Raymarching/.vscode/
+Raymarching/obj/
+Raymarching/ProjectSettings/
+Raymarching/Temp/
+Raymarching/Test_Data/
+
+Raymarching/Test.exe
+Raymarching/Test.rar
