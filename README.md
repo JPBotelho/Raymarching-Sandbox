@@ -3,6 +3,8 @@
 Implementation of raymarching techniques, namely soft shadows, ndotl lighting and color correction. If you can call that a "technique". 
 Most stuff was taken from shadertoy and IQ's blog because my math PhD hasn't arrived yet.
 
+Ref: http://iquilezles.org/www/index.htm
+
 ## Features
 
 	Soft/Hard shadows
